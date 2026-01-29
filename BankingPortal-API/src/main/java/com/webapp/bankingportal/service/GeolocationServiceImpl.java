@@ -2,6 +2,7 @@ package com.webapp.bankingportal.service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -31,35 +32,73 @@ public class GeolocationServiceImpl implements GeolocationService {
     public CompletableFuture<GeolocationResponse> getGeolocation(String ip) {
         val future = new CompletableFuture<GeolocationResponse>();
 
-        try {
-            // Validate IP address
-            InetAddress.getByName(ip);
-
-            log.info("Getting geolocation for IP: {}", ip);
-
-            // Call geolocation API
-            val url = String.format("%s/%s/?token=%s", apiUrl, ip, apiKey);
-            val response = new RestTemplate()
-                    .getForObject(url, GeolocationResponse.class);
-
-            if (response == null) {
-                log.error("Failed to get geolocation for IP: {}", ip);
-                future.completeExceptionally(new GeolocationException(
-                        "Failed to get geolocation for IP: " + ip));
-            } else {
-                future.complete(response);
-            }
-
-        } catch (UnknownHostException e) {
-            log.error("Invalid IP address: {}", ip, e);
-            future.completeExceptionally(e);
-
-        } catch (RestClientException e) {
-            log.error("Failed to get geolocation for IP: {}", ip, e);
-            future.completeExceptionally(e);
+        // 1. Check for localhost IP (v4 or v6)
+        if (ip.equals("0:0:0:0:0:0:0:1") || ip.equals("127.0.0.1")) {
+            log.info("Local environment detected. Returning default location.");
+            future.complete(createFallbackResponse());
+            return future;
         }
 
+        try {
+            val url = String.format("%s/%s/?token=%s", apiUrl, ip, apiKey);
+            val response = new RestTemplate().getForObject(url, GeolocationResponse.class);
+            future.complete(response != null ? response : createFallbackResponse());
+        } catch (Exception e) {
+            log.error("External API error: {}. Using fallback.", e.getMessage());
+            future.complete(createFallbackResponse());
+        }
         return future;
     }
+
+    private GeolocationResponse createFallbackResponse() {
+        GeolocationResponse fallback = new GeolocationResponse();
+
+        GeolocationResponse.City city = new GeolocationResponse.City();
+        city.setNames(Collections.singletonMap("en", "Indore"));
+        fallback.setCity(city);
+
+        GeolocationResponse.Country country = new GeolocationResponse.Country();
+        country.setNames(Collections.singletonMap("en", "India"));
+        fallback.setCountry(country);
+
+        return fallback;
+    }
+
+//    @Override
+//    @Async
+//    public CompletableFuture<GeolocationResponse> getGeolocation(String ip) {
+//        val future = new CompletableFuture<GeolocationResponse>();
+//
+//        try {
+//            // Validate IP address
+//            InetAddress.getByName(ip);
+//
+//            log.info("Getting geolocation for IP: {}", ip);
+//
+//            // Call geolocation API
+//            val url = String.format("%s/%s/?token=%s", apiUrl, ip, apiKey);
+//            val response = new RestTemplate()
+//                    .getForObject(url, GeolocationResponse.class);
+//
+//            if (response == null) {
+//                log.error("Failed to get geolocation for IP: {}", ip);
+//                future.completeExceptionally(new GeolocationException(
+//                        "Failed to get geolocation for IP: " + ip));
+//            } else {
+//                future.complete(response);
+//            }
+//
+//        } catch (UnknownHostException e) {
+//            log.error("Invalid IP address: {}", ip, e);
+//            future.completeExceptionally(e);
+//
+//        } catch (RestClientException e) {
+//            log.error("Failed to get geolocation for IP: {}", ip, e);
+//            future.completeExceptionally(e);
+//
+//        }
+//
+//        return future;
+//    }
 
 }
