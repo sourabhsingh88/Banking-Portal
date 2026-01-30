@@ -43,7 +43,7 @@ The Banking Portal API provides a set of endpoints for managing user accounts, f
 
 ## Installation and Setup
 
-1. Run the [BankingPortal-API](https://github.com/abhi9720/BankingPortal-API).
+1. Run the [BankingPortal-API](https://github.com/sourabhsingh88/BankingPortal-API).
 
 2. Clone this repository to your local machine:
 
@@ -79,7 +79,7 @@ The Banking Portal API provides a set of endpoints for managing user accounts, f
 
 ## Screenshots
 
-![project](https://github.com/abhi9720/BankingPortal-UI/assets/68281476/6c3d8c2e-13e2-49d6-9ec1-ffc3387c741a)
+![project](https://github.com/sourabhsingh88/BankingPortal-UI/assets/68281476/6c3d8c2e-13e2-49d6-9ec1-ffc3387c741a)
 
 ## How to Contribute
 
